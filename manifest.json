@@ -1,24 +1,34 @@
 {
   "manifest_version": 3,
-  "name": "Gmail Auto-Reply with AI",
-  "version": "1.0.0",
-  "description": "Automatically responds to Gmail emails using AI and handles booking slot requests.",
-  "permissions": ["storage", "activeTab", "scripting"],
+  "name": "Gmail AI Responder",
+  "version": "1.0",
+  "description": "Automatically respond to emails in Gmail using AI and handle booking requests",
+  "permissions": ["activeTab", "storage", "declarativeContent", "action", "notifications"],
   "host_permissions": ["https://mail.google.com/*"],
-  "content_scripts": [
-    {
-      "matches": ["https://mail.google.com/*"],
-      "js": ["content.js"]
-    }
-  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icons.jpg"
+    },
+    "default_title": "Gmail AI Responder"
+  },
   "background": {
     "service_worker": "background.js"
   },
-  "action": {
-    "default_popup": "popup.html"
-  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
   "icons": {
-    "48": "icon48.png",
-    "128": "icon128.png"
-  }
+    "16": "icons/icons.jpg"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*"],
+      "matches": ["https://mail.google.com/*"]
+    }
+  ]
 }
