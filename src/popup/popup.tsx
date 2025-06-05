@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React from 'react'
+'use client'
 import type React from 'react'
 import { useState, useEffect } from 'react'
 import '../styles/popup.css'
@@ -292,10 +292,12 @@ const Popup: React.FC = () => {
 
   const handleGenerateResponse = async () => {
     setIsGenerating(true)
+    setExtractionStatus('Generating AI response...')
     try {
       const contentToUse = isEditing ? editableEmailContent : originalEmailContent
       const response = await generateAIResponse(contentToUse, hasBookingRequest)
-      setAiResponse(response )
+      setAiResponse(response)
+      setExtractionStatus('Response generated successfully')
     } catch (error) {
       console.error('Error generating AI response:', error)
       setExtractionStatus('Failed to generate AI response. Please try again.')
@@ -306,12 +308,15 @@ const Popup: React.FC = () => {
 
   const handleRegenerateResponse = async () => {
     setIsGenerating(true)
+    setExtractionStatus('Regenerating response...')
     try {
       const contentToUse = isEditing ? editableEmailContent : originalEmailContent
       const response = await regenerateResponse(contentToUse, aiResponse, hasBookingRequest)
       setAiResponse(response)
+      setExtractionStatus('Response regenerated successfully')
     } catch (error) {
       console.error('Error regenerating response:', error)
+      setExtractionStatus('Failed to regenerate response')
     } finally {
       setIsGenerating(false)
     }
@@ -321,6 +326,7 @@ const Popup: React.FC = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const activeTabId = tabs[0].id
       if (activeTabId) {
+        setExtractionStatus('Applying response to Gmail...')
         chrome.tabs.sendMessage(
           activeTabId,
           {
@@ -343,6 +349,7 @@ const Popup: React.FC = () => {
 
   const handleBooking = async () => {
     try {
+      setExtractionStatus('Checking calendar availability...')
       const bookingResponse = await handleBookingRequest(bookingDetails)
       setAiResponse(
         aiResponse +
@@ -350,8 +357,10 @@ const Popup: React.FC = () => {
           bookingResponse.availableSlots.join('\n') +
           '\n\nPlease let me know which one works best for you.'
       )
+      setExtractionStatus('Calendar availability added to response')
     } catch (error) {
       console.error('Error handling booking:', error)
+      setExtractionStatus('Failed to get calendar availability')
     }
   }
 
@@ -414,7 +423,7 @@ const Popup: React.FC = () => {
               saveSettings()
             }}
           />
-          <span>Auto-open extension when email opens</span>
+          <span>Auto-open when email is opened</span>
         </label>
       </div>
 
@@ -430,7 +439,9 @@ const Popup: React.FC = () => {
       {showSavedResponses && (
         <div className="saved-responses-panel">
           <div className="panel-header">
-            <h3>📁 Saved Responses ({savedResponses.length})</h3>
+            <h3>
+              <span className="icon">📁</span> Saved Responses ({savedResponses.length})
+            </h3>
             <button className="close-button" onClick={() => setShowSavedResponses(false)}>
               ✕
             </button>
@@ -472,7 +483,9 @@ const Popup: React.FC = () => {
       {emailMetadata && (
         <div className="email-info-card">
           <div className="card-header">
-            <h3>📧 Email Details</h3>
+            <h3>
+              <span className="icon">📧</span> Email Details
+            </h3>
             {emailMetadata.isConversation && <span className="conversation-badge">Thread</span>}
           </div>
           <div className="email-details">
@@ -504,7 +517,9 @@ const Popup: React.FC = () => {
       {/* Email Content Section */}
       <div className="content-section">
         <div className="section-header">
-          <h3>📄 Email Content</h3>
+          <h3>
+            <span className="icon">📄</span> Email Content
+          </h3>
           <div className="content-actions">
             {originalEmailContent && (
               <>
@@ -513,7 +528,7 @@ const Popup: React.FC = () => {
                   onClick={() => setIsEditing(!isEditing)}
                   title={isEditing ? 'Switch to read-only' : 'Edit content'}
                 >
-                  {isEditing ? '👁️' : '✏️'}
+                  {isEditing ? '👁️ View' : '✏️ Edit'}
                 </button>
                 {isEditing && editableEmailContent !== originalEmailContent && (
                   <button
@@ -521,15 +536,10 @@ const Popup: React.FC = () => {
                     onClick={resetToOriginal}
                     title="Reset to original"
                   >
-                    🔄
+                    🔄 Reset
                   </button>
                 )}
               </>
-            )}
-            {originalEmailContent && (
-              <span className="content-length">
-                {isEditing ? editableEmailContent.length : originalEmailContent.length} characters
-              </span>
             )}
           </div>
         </div>
@@ -565,8 +575,15 @@ const Popup: React.FC = () => {
           onClick={handleGenerateResponse}
           disabled={!originalEmailContent || isGenerating}
         >
-          <span className="button-icon">✨</span>
-          {isGenerating ? 'Generating...' : 'Generate AI Response'}
+          {isGenerating ? (
+            <>
+              <span className="loading-spinner"></span> Generating...
+            </>
+          ) : (
+            <>
+              <span className="button-icon">✨</span> Generate AI Response
+            </>
+          )}
         </button>
       </div>
 
@@ -584,12 +601,13 @@ const Popup: React.FC = () => {
       {aiResponse && (
         <div className="response-section">
           <div className="section-header">
-            <h3>🤖 AI Generated Response</h3>
+            <h3>
+              <span className="icon">🤖</span> AI Response
+            </h3>
             <div className="response-actions-header">
               <button className="save-button" onClick={saveResponse} title="Save this response">
-                💾
+                💾 Save
               </button>
-              <span className="response-length">{aiResponse.length} characters</span>
             </div>
           </div>
           <div className="content-box response-box">
@@ -607,20 +625,25 @@ const Popup: React.FC = () => {
               onClick={handleRegenerateResponse}
               disabled={isGenerating}
             >
-              <span className="button-icon">🔄</span>
-              Regenerate
+              {isGenerating ? (
+                <>
+                  <span className="loading-spinner"></span> Regenerating...
+                </>
+              ) : (
+                <>
+                  <span className="button-icon">🔄</span> Regenerate
+                </>
+              )}
             </button>
             <button className="primary-button" onClick={handleApplyResponse}>
-              <span className="button-icon">📤</span>
-              Apply to Email
+              <span className="button-icon">📤</span> Apply to Email
             </button>
           </div>
 
           {hasBookingRequest && (
             <div className="booking-section">
               <button className="booking-button" onClick={handleBooking}>
-                <span className="button-icon">📅</span>
-                Add Calendar Availability
+                <span className="button-icon">📅</span> Add Calendar Availability
               </button>
             </div>
           )}
@@ -629,7 +652,7 @@ const Popup: React.FC = () => {
 
       {/* Footer */}
       <div className="footer">
-        <div className="footer-text">Powered by AI • Made for Gmail</div>
+        <div className="footer-text">Gmail AI Assistant • Powered by AI</div>
       </div>
     </div>
   )

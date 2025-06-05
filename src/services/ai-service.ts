@@ -97,7 +97,7 @@ export const generateAIResponse = async (
     console.log('Calling n8n webhook for AI response...')
 
     const response = await fetch(
-      'https://anandpro.app.n8n.cloud/webhook-test/e1b66b3a-f460-43fe-baf5-48376824f85b',
+      'https://anandpro.app.n8n.cloud/webhook/e1b66b3a-f460-43fe-baf5-48376824f85b',
       {
         method: 'POST',
         headers: {
@@ -152,7 +152,7 @@ export const regenerateResponse = async (
     console.log('Calling n8n webhook for AI response regeneration...')
 
     const response = await fetch(
-      'https://anandpro.app.n8n.cloud/webhook-test/e1b66b3a-f460-43fe-baf5-48376824f85b',
+      'https://anandpro.app.n8n.cloud/webhook/e1b66b3a-f460-43fe-baf5-48376824f85b',
       {
         method: 'POST',
         headers: {
