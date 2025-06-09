@@ -412,20 +412,7 @@ const Popup: React.FC = () => {
         </div>
       </div>
 
-      {/* Settings Bar */}
-      <div className="settings-bar">
-        <label className="setting-item">
-          <input
-            type="checkbox"
-            checked={autoOpenEnabled}
-            onChange={(e) => {
-              setAutoOpenEnabled(e.target.checked)
-              saveSettings()
-            }}
-          />
-          <span>Auto-open when email is opened</span>
-        </label>
-      </div>
+      
 
       {/* Status Bar */}
       <div className="status-bar">
